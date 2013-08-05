@@ -75,6 +75,8 @@ public class MainClass {
 		panel.add(quitButton);
 		JButton pathFindButton = new JButton("Path Find");
 		panel.add(pathFindButton);
+		JButton articulationFindButton = new JButton("Articulation Points");
+		panel.add(articulationFindButton);
 		JLabel topText = new JLabel("Enter road name");
 		panel.add(topText);
 
@@ -125,6 +127,14 @@ public class MainClass {
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				System.exit(0);
+			}
+		});
+		
+		articulationFindButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				if(loaded){
+					graph.findArticulationPoints();
+				}
 			}
 		});
 

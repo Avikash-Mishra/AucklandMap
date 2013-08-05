@@ -65,6 +65,10 @@ public class Graph {
 		if(numSubtrees > 1){
 			this.articulationPoints.add(start);
 		}
+		for(Intersection i : articulationPoints){
+			i.setColor(Color.MAGENTA);
+		}
+		System.out.println(articulationPoints.size());
 	}
 	
 	
