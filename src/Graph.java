@@ -28,7 +28,7 @@ public class Graph {
 	private double scale;
 	private Location origin;
 	private JComponent drawing;
-	private ArrayList<Intersection> articulationPoints;
+	private HashSet<Intersection> articulationPoints;
 
 	public Graph(File dir, JComponent d) {
 		this.drawing = d;
@@ -50,7 +50,7 @@ public class Graph {
 			i.depth = Double.POSITIVE_INFINITY;
 		}
 		
-		this.articulationPoints = new ArrayList<Intersection>();
+		this.articulationPoints = new HashSet<Intersection>();
 		
 		Intersection start = intersections.get(0);
 		start.depth = 0;
