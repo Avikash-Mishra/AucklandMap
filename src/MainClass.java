@@ -64,7 +64,7 @@ public class MainClass {
 			public void actionPerformed(ActionEvent ev) {
 				textOutput.setText("Loading...");
 				loadDir();
-				graph = new Graph(dirFolder, drawing);
+				graph = new Graph(dirFolder, drawing, textOutput);
 				loaded = true;
 				textOutput.setText("Loading...Done ");
 			}

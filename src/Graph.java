@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.Set;
@@ -29,10 +31,12 @@ public class Graph {
 	private double scale;
 	private Location origin;
 	private JComponent drawing;
+	private JTextArea textOutput;
 	private HashSet<Intersection> articulationPoints;
 
-	public Graph(File dir, JComponent d) {
+	public Graph(File dir, JComponent d, JTextArea textOutput) {
 		this.drawing = d;
+		this.textOutput = textOutput;
 		intersections = new ArrayList<Intersection>();
 		roads = new ArrayList<Road>();
 		segments = new ArrayList<Segment>();
@@ -222,17 +226,57 @@ public class Graph {
 		for (Segment seg : segments) {
 			seg.setColor(Color.blue);
 		}
+		LinkedHashMap<String,Double> roadInfo = new LinkedHashMap<String, Double>();
 		while (frin.getFrom() != null) {
+			
 			frin.getNode().setColor(Color.GREEN);
 			ArrayList<Segment> edges = frin.getNode().getEdges();
 			for (Segment seg : edges) {
 				if (seg.getNodeID1().equals(frin.getFrom().getNode())
 						|| seg.getNodeID2().equals(frin.getFrom().getNode())) {
 					seg.setColor(Color.GREEN);
+					String roadLabel = "";
+					for(Road r : roads){
+						if(r.getRoadID() == seg.getRoadID()){
+							roadLabel = r.getLabel();
+							break;
+						}
+					}
+					if(roadInfo.containsKey(roadLabel)){
+						double value = roadInfo.get(roadLabel);
+						value += seg.getLength();
+						roadInfo.put(roadLabel, value);
+					}
+					else{
+						roadInfo.put(roadLabel, seg.getLength());
+					}
 				}
 			}
 			frin = frin.getFrom();
 		}
+		double totalDistance = 0;
+		textOutput.setText("");
+		for(Map.Entry<String, Double> entry : roadInfo.entrySet()){
+			boolean found = false;
+			String roadSeg = "";
+			
+			for(Road road : roads){
+				if(found){
+					break;
+				}
+				else{
+					if(road.getLabel().equals(entry.getKey())){
+						roadSeg = road.getLabel() +": "+ entry.getValue().toString().substring(0, 5) +"km"+ '\n';
+						totalDistance += entry.getValue();
+						
+					}
+				}
+			}
+			found = false;
+			textOutput.append(roadSeg);
+		}
+		String total = ""+totalDistance;
+		textOutput.append("Total Distance: "+total.substring(0, 5) +"km" +'\n');
 	}
 
 	/**
