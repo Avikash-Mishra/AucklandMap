@@ -41,7 +41,7 @@ public class MainClass {
 	private int checkPath = 0;
 	Intersection path1Node;
 	Intersection path2Node;
-
+	public boolean articulationPoint = false;
 	/** Constructor */
 	public MainClass() {
 		startUpInterface();
@@ -133,7 +133,7 @@ public class MainClass {
 		articulationFindButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				if(loaded){
-					graph.interDFSArticulaionPoints();
+					articulationPoint = true; 
 				}
 			}
 		});
@@ -212,6 +212,10 @@ public class MainClass {
 							pathFind = false;
 							checkPath = 0;
 						} 
+					}
+					else if(articulationPoint){
+						graph.interDFSArticulaionPoints(closest);
+						articulationPoint = false;
 					}
 
 					else {

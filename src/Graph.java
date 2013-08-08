@@ -46,17 +46,19 @@ public class Graph {
 		connectSegToNode();
 	}
 
-	public void interDFSArticulaionPoints() {
+	public void interDFSArticulaionPoints(Intersection start) {
 		this.articulationPoints = new HashSet<Intersection>();
 		for (Intersection i : intersections) {
 			i.depth = Double.POSITIVE_INFINITY;
 		}
 		Stack<StackElement> stack = new Stack<StackElement>();
-		Intersection firstNode = intersections.get(0);
-		Intersection rootInter = new Intersection();
-		StackElement rootStack = new StackElement(rootInter, 0, null);
-
-		stack.push(new StackElement(firstNode, 1, rootStack));
+		StackElement rootStack = new StackElement(start, 0, null);
+		if (getNeighbours(start).size() == 1) {
+			stack.push(new StackElement(getNeighbours(start).get(0), 1,
+					rootStack));
+		} else {
+			stack.push(new StackElement(start, 1, rootStack));
+		}
 
 		while (!(stack.empty())) {
 			StackElement elem = stack.peek();
@@ -78,9 +80,10 @@ public class Graph {
 					stack.push(new StackElement(child, node.depth + 1, elem));
 				}
 			} else {
-				if (!(node.equals(firstNode))) {
+				if (node.depth > 1) {
 					if (elem.reach >= elem.parent.depth) {
-							articulationPoints.add(elem.parent.node);
+						articulationPoints.add(elem.parent.node);
+
 					}
 					elem.parent.reach = Math.min(elem.parent.reach, elem.reach);
 				}
