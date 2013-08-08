@@ -133,7 +133,7 @@ public class MainClass {
 		articulationFindButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				if(loaded){
-					graph.findArticulationPoints();
+					graph.interDFSArticulaionPoints();
 				}
 			}
 		});

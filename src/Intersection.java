@@ -23,6 +23,7 @@ public class Intersection {
 		this.color = Color.blue;
 		this.visited = false;
 	}
+	public Intersection(){}
 	
 	public void addSegment(Segment s){
 		this.edges.add(s);

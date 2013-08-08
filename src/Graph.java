@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
@@ -44,68 +45,113 @@ public class Graph {
 		loadTrie();
 		connectSegToNode();
 	}
-	//TODO display articulation points
-	public void findArticulationPoints(){
-		for(Intersection i : intersections){
+
+	public void interDFSArticulaionPoints() {
+		this.articulationPoints = new HashSet<Intersection>();
+		for (Intersection i : intersections) {
 			i.depth = Double.POSITIVE_INFINITY;
 		}
-		
-		this.articulationPoints = new HashSet<Intersection>();
-		
-		Intersection start = intersections.get(0);
-		start.depth = 0;
-		int numSubtrees = 0;
-		ArrayList<Intersection> neighbours = getNeighbours(start);
-		for(Intersection neigh : neighbours){
-			if(neigh.depth == Double.POSITIVE_INFINITY){
-				recArtPts(neigh,1.0,start);
-				numSubtrees++;
+		Stack<StackElement> stack = new Stack<StackElement>();
+		Intersection firstNode = intersections.get(0);
+		Intersection rootInter = new Intersection();
+		StackElement rootStack = new StackElement(rootInter, 0, null);
+
+		stack.push(new StackElement(firstNode, 1, rootStack));
+
+		while (!(stack.empty())) {
+			StackElement elem = stack.peek();
+			Intersection node = elem.node;
+			if (elem.children == null) {
+				node.depth = elem.depth;
+				elem.reach = elem.depth;
+				elem.children = new Stack<Intersection>();
+				for (Intersection neigh : getNeighbours(node)) {
+					if (!(neigh.equals(elem.parent.node))) {
+						elem.children.add(neigh);
+					}
+				}
+			} else if (!(elem.children.isEmpty())) {
+				Intersection child = elem.children.pop();
+				if (child.depth < Double.POSITIVE_INFINITY) {
+					elem.reach = Math.min(elem.reach, child.depth);
+				} else {
+					stack.push(new StackElement(child, node.depth + 1, elem));
+				}
+			} else {
+				if (!(node.equals(firstNode))) {
+					if (elem.reach >= elem.parent.depth) {
+							articulationPoints.add(elem.parent.node);
+					}
+					elem.parent.reach = Math.min(elem.parent.reach, elem.reach);
+				}
+				stack.pop();
 			}
 		}
-		if(numSubtrees > 1){
-			this.articulationPoints.add(start);
-		}
-		for(Intersection i : articulationPoints){
+		for (Intersection i : articulationPoints) {
 			i.setColor(Color.MAGENTA);
 		}
 		System.out.println(articulationPoints.size());
 	}
-	
-	
-	private double recArtPts(Intersection node, double depth, Intersection fromNode) {
+
+	public void findArticulationPoints() {
+		for (Intersection i : intersections) {
+			i.depth = Double.POSITIVE_INFINITY;
+		}
+
+		this.articulationPoints = new HashSet<Intersection>();
+
+		Intersection start = intersections.get(0);
+		start.depth = 0;
+		int numSubtrees = 0;
+		ArrayList<Intersection> neighbours = getNeighbours(start);
+		for (Intersection neigh : neighbours) {
+			if (neigh.depth == Double.POSITIVE_INFINITY) {
+				recArtPts(neigh, 1.0, start);
+				numSubtrees++;
+			}
+		}
+		if (numSubtrees > 1) {
+			this.articulationPoints.add(start);
+		}
+		for (Intersection i : articulationPoints) {
+			i.setColor(Color.MAGENTA);
+		}
+		System.out.println(articulationPoints.size());
+	}
+
+	private double recArtPts(Intersection node, double depth,
+			Intersection fromNode) {
 		node.depth = depth;
 		double reachBack = depth;
-		
-		for(Intersection neighbour : getNeighbours(node)){
-			if(!(neighbour.equals(fromNode))){
-				if(neighbour.depth < Double.POSITIVE_INFINITY){
-					reachBack = Math.min(neighbour.depth,reachBack);
-				}
-				else{
-					double childReach = recArtPts(neighbour, depth+1, node);
+
+		for (Intersection neighbour : getNeighbours(node)) {
+			if (!(neighbour.equals(fromNode))) {
+				if (neighbour.depth < Double.POSITIVE_INFINITY) {
+					reachBack = Math.min(neighbour.depth, reachBack);
+				} else {
+					double childReach = recArtPts(neighbour, depth + 1, node);
 					reachBack = Math.min(childReach, reachBack);
-					if(childReach >= depth){
+					if (childReach >= depth) {
 						articulationPoints.add(node);
 					}
-					
+
 				}
 			}
 		}
-		
+
 		return reachBack;
-		
+
 	}
-	
-	public ArrayList<Intersection> getNeighbours(Intersection node){
+
+	public ArrayList<Intersection> getNeighbours(Intersection node) {
 		ArrayList<Intersection> neighbours = new ArrayList<Intersection>();
-		for(Segment seg : node.getEdges()){
-			if(seg.getNodeID1().equals(node)){
-				if(seg.getNodeID2() != null){
+		for (Segment seg : node.getEdges()) {
+			if (seg.getNodeID1().equals(node)) {
+				if (seg.getNodeID2() != null) {
 					neighbours.add(seg.getNodeID2());
 				}
-			}
-			else if(seg.getNodeID2().equals(node)){
-				if(seg.getNodeID1() != null){
+			} else if (seg.getNodeID2().equals(node)) {
+				if (seg.getNodeID1() != null) {
 					neighbours.add(seg.getNodeID1());
 				}
 			}
@@ -113,70 +159,73 @@ public class Graph {
 		return neighbours;
 	}
 
-	/** A* Search looking for the shortest path*/
+	/** A* Search looking for the shortest path */
 	public void aSearch(Intersection start, Intersection goal) {
 		Comparator<fringeObject> comparator = new fringeObjectComparator();
-		PriorityQueue<fringeObject> fringe = new PriorityQueue<fringeObject>(10,comparator);
-		
-		for(Intersection i : intersections){
+		PriorityQueue<fringeObject> fringe = new PriorityQueue<fringeObject>(
+				10, comparator);
+
+		for (Intersection i : intersections) {
 			i.visited = false;
 		}
 		fringeObject pathFrom = null;
-		fringe.add(new fringeObject(start,pathFrom,0,estimatePathLengh(start, goal)));
-		while(!(fringe.isEmpty())){
+		fringe.add(new fringeObject(start, pathFrom, 0, estimatePathLengh(
+				start, goal)));
+		while (!(fringe.isEmpty())) {
 			fringeObject fringeNode = fringe.remove();
 			Intersection node = fringeNode.getNode();
-			if(!(node.visited)){
+			if (!(node.visited)) {
 				node.visited = true;
 				pathFrom = fringeNode;
-				if(node.equals(goal)){
+				if (node.equals(goal)) {
 					this.displayPathFromFringeObject(fringeNode);
 					break;
 				}
 				ArrayList<Segment> edges = new ArrayList<Segment>();
 				edges = node.getEdges();
-				for(Segment seg : edges){
+				for (Segment seg : edges) {
 					Intersection neigh = null;
-					if(seg.getNodeID1().equals(node)){
-						if(seg.getNodeID2() != null){
+					if (seg.getNodeID1().equals(node)) {
+						if (seg.getNodeID2() != null) {
 							neigh = seg.getNodeID2();
 						}
-					}
-					else if(seg.getNodeID2().equals(node)){
-						if(seg.getNodeID1() != null){
+					} else if (seg.getNodeID2().equals(node)) {
+						if (seg.getNodeID1() != null) {
 							neigh = seg.getNodeID1();
 						}
 					}
-					if(neigh != null){
-						if(!(neigh.visited)){
-							double costToNeigh = fringeNode.getCostToHere() + seg.getLength();
-							double estTotal = costToNeigh + estimatePathLengh(neigh,goal);
-							fringe.add(new fringeObject(neigh, fringeNode , costToNeigh, estTotal));
+					if (neigh != null) {
+						if (!(neigh.visited)) {
+							double costToNeigh = fringeNode.getCostToHere()
+									+ seg.getLength();
+							double estTotal = costToNeigh
+									+ estimatePathLengh(neigh, goal);
+							fringe.add(new fringeObject(neigh, fringeNode,
+									costToNeigh, estTotal));
 						}
 					}
 				}
 			}
-			
+
 		}
-		
-		
+
 	}
 
 	public double estimatePathLengh(Intersection from, Intersection to) {
 		return from.getLocation().distanceTo(to.getLocation());
 	}
-	
-	public void displayPathFromFringeObject(fringeObject frin){
-		for(Segment seg : segments){
+
+	public void displayPathFromFringeObject(fringeObject frin) {
+		for (Segment seg : segments) {
 			seg.setColor(Color.blue);
 		}
-		while(frin.getFrom()!=null){
+		while (frin.getFrom() != null) {
 			frin.getNode().setColor(Color.GREEN);
 			ArrayList<Segment> edges = frin.getNode().getEdges();
-			for(Segment seg : edges){
-				if(seg.getNodeID1().equals(frin.getFrom().getNode())
-						|| seg.getNodeID2().equals(frin.getFrom().getNode())){
-					seg.setColor(Color.GREEN);					
+			for (Segment seg : edges) {
+				if (seg.getNodeID1().equals(frin.getFrom().getNode())
+						|| seg.getNodeID2().equals(frin.getFrom().getNode())) {
+					seg.setColor(Color.GREEN);
 				}
 			}
 			frin = frin.getFrom();
@@ -249,18 +298,18 @@ public class Graph {
 		}
 	}
 
-	private void connectSegToNode(){
-		for(Segment seg : segments){
-			if(seg.getNodeID1() != null){
+	private void connectSegToNode() {
+		for (Segment seg : segments) {
+			if (seg.getNodeID1() != null) {
 				seg.getNodeID1().addSegment(seg);
 			}
-			
-			if(seg.getNodeID2() != null){
+
+			if (seg.getNodeID2() != null) {
 				seg.getNodeID2().addSegment(seg);
 			}
 		}
 	}
-	
+
 	/**
 	 * @return the intersections
 	 */
@@ -339,12 +388,11 @@ public class Graph {
 	 */
 	public void draw(Graphics g, Location origin, double scale, Color color,
 			int xdiff, int ydiff) {
-		for (Segment s : segments) {
-			s.draw(g, origin, scale, color, xdiff, ydiff);
-		}
-
 		for (Intersection i : intersections) {
 			i.draw(g, origin, scale, color, xdiff, ydiff);
+		}
+		for (Segment s : segments) {
+			s.draw(g, origin, scale, color, xdiff, ydiff);
 		}
 
 	}
