@@ -50,7 +50,7 @@ public class Intersection {
 	public void draw(Graphics g, Location origin, double scale, Color color, int xdiff, int ydiff) {
 		g.setColor(this.color);
 		Point p1 = location.getPoint(origin, scale);
-		g.drawRect(p1.x-1+xdiff, p1.y-1+ydiff, 1, 1);
+		g.drawRect(p1.x-1+xdiff, p1.y-1+ydiff, 2, 2);
 
 	}
 

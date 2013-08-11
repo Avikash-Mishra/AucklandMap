@@ -32,7 +32,7 @@ public class Graph {
 	private Location origin;
 	private JComponent drawing;
 	private JTextArea textOutput;
-	private HashSet<Intersection> articulationPoints;
+	private HashSet<Intersection> articulationPoints = new HashSet<Intersection>();;
 
 	public Graph(File dir, JComponent d, JTextArea textOutput) {
 		this.drawing = d;
@@ -94,10 +94,10 @@ public class Graph {
 				stack.pop();
 			}
 		}
+	
 		for (Intersection i : articulationPoints) {
-			i.setColor(Color.MAGENTA);
+			i.setColor(Color.red);
 		}
-		System.out.println(articulationPoints.size());
 	}
 
 	public void findArticulationPoints() {
@@ -217,7 +217,8 @@ public class Graph {
 		}
 
 	}
-
+	
+	
 	public double estimatePathLengh(Intersection from, Intersection to) {
 		return from.getLocation().distanceTo(to.getLocation());
 	}
